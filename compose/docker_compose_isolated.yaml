@@ -3,8 +3,8 @@ services:
     build:
       context: ..
       dockerfile: dockerfiles/Dockerfile_knots
-    image: isolated-bitcoin-node
-    container_name: bitcoin-node
+    image: isolated-bitcoin-node-knots
+    container_name: bitcoin-node-knots
     volumes:
       - ${PWD}/configs/bitcoin_isolated_node.conf:/root/.bitcoin/bitcoin.conf:ro
       - ${PWD}/bitcoin_rpc_auth.conf:/root/.bitcoin/bitcoin_rpc_auth.conf:ro
