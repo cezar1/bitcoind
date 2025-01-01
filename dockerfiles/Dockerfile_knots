@@ -1,0 +1,71 @@
+# Use Ubuntu 22.04 LTS for stability and long-term support
+FROM ubuntu:22.04
+
+# Install necessary build tools and dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
+    libssl-dev \
+    libsqlite3-dev \
+    libboost-all-dev \
+    libevent-dev \
+    libzmq3-dev \
+    libdb5.3++-dev \
+    libminiupnpc-dev \
+    python3 \
+    python3-pip \
+    git \
+    pkg-config \
+    bsdextrautils  \
+    net-tools \
+    wget \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set up the build environment
+WORKDIR /build
+
+# Install Berkeley DB for wallet support
+RUN wget http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz && \
+    tar -xzvf db-4.8.30.NC.tar.gz && \
+    cd db-4.8.30.NC && \
+    sed -i 's/__atomic_compare_exchange/__db_atomic_compare_exchange/g' dbinc/atomic.h && \
+    sed -i 's/__atomic_exchange/__db_atomic_exchange/g' dbinc/atomic.h && \
+    cd build_unix && \
+    ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local && \
+    make && make install && \
+    cd / && rm -rf db-4.8.30.NC db-4.8.30.NC.tar.gz
+
+
+    # Set up the build environment
+WORKDIR /build
+
+# Fetch the source code (using a specific tag for reproducibility)
+RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
+
+# Move into the source directory
+WORKDIR /build/bitcoin
+
+# Run autogen.sh with additional tools
+RUN ./autogen.sh
+
+# Configure the build without GUI
+RUN ./configure --prefix=/opt/bitcoin --with-gui=no --enable-static --disable-shared --enable-wallet --with-sqlite
+
+# Build bitcoind
+RUN make -j$(nproc)
+
+# Install bitcoind to a known location for reproducibility
+RUN make install
+
+# Clean up the build environment for a smaller image
+RUN make clean && \
+    rm -rf /build
+
+# Set up the final environment
+ENV PATH="/opt/bitcoin/bin:$PATH"
+
+# Create a data directory for bitcoind
+RUN mkdir -p /data
+VOLUME ["/data"]

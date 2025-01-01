@@ -1,0 +1,5 @@
+#ISOLATED NODE
+python scripts/generate_rpc_auth_conf.py
+sudo ln -s /mnt/d/btc /mnt/data/btc
+docker compose -f compose/docker_compose_isolated.yaml up --build
+docker compose -f compose/docker_compose_isolated.yaml down

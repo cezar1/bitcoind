@@ -1,0 +1,18 @@
+services:
+  bitcoin-node-knots:
+    build:
+      context: ..
+      dockerfile: dockerfiles/Dockerfile_knots
+    image: isolated-bitcoin-node
+    container_name: bitcoin-node
+    volumes:
+      - ${PWD}/configs/bitcoin_isolated_node.conf:/root/.bitcoin/bitcoin.conf:ro
+      - ${PWD}/bitcoin_rpc_auth.conf:/root/.bitcoin/bitcoin_rpc_auth.conf:ro
+      - /mnt/data/btc:/data
+    ports:
+      - "8332:8332"
+      - "8333:8333"
+    command: bitcoind -datadir=/data -conf=/root/.bitcoin/bitcoin.conf -checkblocks=1 -dbcache=4096 -persistmempool=0
+    stop_grace_period: 120s
+    stop_signal: SIGTERM
+    restart: "no"
