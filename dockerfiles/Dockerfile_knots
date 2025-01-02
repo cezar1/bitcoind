@@ -26,16 +26,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set up the build environment
 WORKDIR /build
 
-# Install Berkeley DB for wallet support
-RUN wget http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz && \
-    tar -xzvf db-4.8.30.NC.tar.gz && \
-    cd db-4.8.30.NC && \
-    sed -i 's/__atomic_compare_exchange/__db_atomic_compare_exchange/g' dbinc/atomic.h && \
-    sed -i 's/__atomic_exchange/__db_atomic_exchange/g' dbinc/atomic.h && \
+# Define Berkeley DB options - choose between two versions by commenting/uncommenting
+
+# Option 1: Berkeley DB 4.8.30.NC
+# ARG BERKELEYDB_FILENAME=db-4.8.30.NC
+# ARG BERKELEYDB_URL=http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz
+
+# Option 2: Berkeley DB 5.3.28
+ARG BERKELEYDB_FILENAME=db-5.3.28
+ARG BERKELEYDB_URL=https://github.com/berkeleydb/libdb/releases/download/v5.3.28/db-5.3.28.tar.gz
+
+# Fix atomic function naming conflicts in all relevant files
+RUN wget ${BERKELEYDB_URL} && \
+    tar -xzvf ${BERKELEYDB_FILENAME}.tar.gz && \
+    cd ${BERKELEYDB_FILENAME} && \
+    find . -type f -exec sed -i 's/__atomic_compare_exchange/__db_atomic_compare_exchange/g' {} + 2>/dev/null || true && \
+    find . -type f -exec sed -i 's/__atomic_exchange/__db_atomic_exchange/g' {} + 2>/dev/null || true && \
     cd build_unix && \
     ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local && \
     make && make install && \
-    cd / && rm -rf db-4.8.30.NC db-4.8.30.NC.tar.gz
+    cd / && rm -rf ${BERKELEYDB_FILENAME} ${BERKELEYDB_FILENAME}.tar.gz
 
 
     # Set up the build environment
