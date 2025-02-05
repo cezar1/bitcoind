@@ -70,3 +70,5 @@ bitcoin-cli getnetworkinfo
 # Check only the connection count
 bitcoin-cli getnetworkinfo | grep "connections"
 ``` 
+
+# Root Bitcoin Node
