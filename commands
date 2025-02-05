@@ -8,3 +8,12 @@ docker exec -it bitcoin-node-knots bash
 bitcoin-cli getpeerinfo
 bitcoin-cli getnetworkinfo
 bitcoin-cli getnetworkinfo | grep "connections"
+
+#ROOT NODE
+docker compose -f compose/docker_compose_root.yaml build --no-cache
+docker compose -f compose/docker_compose_root.yaml up
+docker compose -f compose/docker_compose_root.yaml down
+docker exec -it bitcoin-node-knots bash
+bitcoin-cli getpeerinfo
+bitcoin-cli getnetworkinfo
+bitcoin-cli getnetworkinfo | grep "connections"
