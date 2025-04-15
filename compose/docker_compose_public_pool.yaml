@@ -1,0 +1,52 @@
+services:
+  bitcoin-node-knots:
+    build:
+      context: ..
+      dockerfile: dockerfiles/Dockerfile_knots
+    image: isolated-bitcoin-node-knots
+    container_name: bitcoin-node-knots
+    volumes:
+      - ${PWD}/configs/bitcoin_public_pool_node.conf:/root/.bitcoin/bitcoin.conf:ro
+      - ${PWD}/bitcoin_rpc_auth.conf:/root/.bitcoin/bitcoin_rpc_auth.conf:ro
+      - /mnt/data/btc:/data
+      # - ${PWD}/bitcoin_cookie:/root/.bitcoin/.cookie
+    ports:
+      - "8332:8332"
+      - "8333:8333"
+    command: bitcoind -datadir=/data -conf=/root/.bitcoin/bitcoin.conf -checkblocks=1 -dbcache=4096 -persistmempool=0
+    stop_grace_period: 120s
+    stop_signal: SIGTERM
+    restart: "no"
+    networks:
+      - pool-network
+
+  pool:
+    image: public-pool:latest
+    container_name: public-pool
+    ports:
+      - "3333:3333"
+      - "3334:3334"
+    volumes:
+      - ${PWD}/public-pool/.env:/public-pool/.env:ro
+      # - ${PWD}/bitcoin_cookie:/public-pool/.cookie
+    depends_on:
+      - bitcoin-node-knots
+    networks:
+      - pool-network
+
+  ui:
+    image: public-pool-ui:latest
+    container_name: public-pool-ui
+    environment:
+      - POOL_API_URL=public-pool:3334
+      - STRATUM_URL=public-pool:3333
+    ports:
+      - "8080:80"
+    depends_on:
+      - pool
+    networks:
+      - pool-network
+
+networks:
+  pool-network:
+    driver: bridge
