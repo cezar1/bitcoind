@@ -17,3 +17,10 @@ docker exec -it bitcoin-node-knots bash
 bitcoin-cli getpeerinfo
 bitcoin-cli getnetworkinfo
 bitcoin-cli getnetworkinfo | grep "connections"
+
+#PUBLIC POOL NODE
+docker build -t public-pool-local:latest .
+docker compose -f compose/docker_compose_root.yaml up -d pool
+docker exec -it public-pool bash
+
+

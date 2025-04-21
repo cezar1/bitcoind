@@ -2,3 +2,5 @@ bitcoin_rpc_auth.conf
 bitcoin_rpc_auth.json
 bitcoin_rpc_auth_credentials.conf
 bitcoin_cookie
+public-pool/.env.secrets
+input.json

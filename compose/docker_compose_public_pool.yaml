@@ -21,7 +21,7 @@ services:
       - pool-network
 
   pool:
-    image: public-pool:latest
+    image: public-pool-local:latest
     container_name: public-pool
     ports:
       - "3333:3333"
@@ -29,6 +29,8 @@ services:
     volumes:
       - ${PWD}/public-pool/.env:/public-pool/.env:ro
       # - ${PWD}/bitcoin_cookie:/public-pool/.cookie
+    env_file:
+      - ${PWD}/public-pool/.env.secrets
     depends_on:
       - bitcoin-node-knots
     networks:
