@@ -4,7 +4,52 @@ import json
 import binascii
 import struct
 import sys
+import hashlib
+import base58
+import bech32
 from datetime import datetime
+
+def hash160(data):
+    """Perform the RIPEMD-160(SHA-256(data)) hash"""
+    return hashlib.new('ripemd160', hashlib.sha256(data).digest()).digest()
+
+def p2pkh_to_address(script_hex):
+    """Convert a P2PKH script to a Bitcoin address"""
+    # P2PKH format: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+    # Typical format: 76a914<20-byte-hash>88ac
+    if len(script_hex) == 50 and script_hex.startswith("76a914") and script_hex.endswith("88ac"):
+        pubkey_hash = bytes.fromhex(script_hex[6:46])
+        # Add version byte (0x00 for mainnet)
+        versioned_payload = b"\x00" + pubkey_hash
+        # Calculate checksum
+        checksum = hashlib.sha256(hashlib.sha256(versioned_payload).digest()).digest()[:4]
+        # Combine and encode with Base58
+        return base58.b58encode(versioned_payload + checksum).decode('utf-8')
+    return None
+
+def p2sh_to_address(script_hex):
+    """Convert a P2SH script to a Bitcoin address"""
+    # P2SH format: OP_HASH160 <scriptHash> OP_EQUAL
+    # Typical format: a914<20-byte-hash>87
+    if len(script_hex) == 46 and script_hex.startswith("a914") and script_hex.endswith("87"):
+        script_hash = bytes.fromhex(script_hex[4:44])
+        # Add version byte (0x05 for mainnet)
+        versioned_payload = b"\x05" + script_hash
+        # Calculate checksum
+        checksum = hashlib.sha256(hashlib.sha256(versioned_payload).digest()).digest()[:4]
+        # Combine and encode with Base58
+        return base58.b58encode(versioned_payload + checksum).decode('utf-8')
+    return None
+
+def p2wpkh_to_address(script_hex):
+    """Convert a P2WPKH script to a Bech32 address"""
+    # P2WPKH format: OP_0 <pubKeyHash>
+    # Typical format: 0014<20-byte-hash>
+    if len(script_hex) == 44 and script_hex.startswith("0014"):
+        pubkey_hash = bytes.fromhex(script_hex[4:])
+        # Convert to bech32 address (Segwit v0)
+        return bech32.encode("bc", 0, pubkey_hash)
+    return None
 
 def decode_coinbase(input_file):
     # Read the file contents
@@ -125,26 +170,49 @@ def decode_coinbase(input_file):
         offset += script_len*2
         print(f"  Script: {script_hex}")
         
-        # Attempt to decode script type
+        # Attempt to decode script type and address
         if script_hex.startswith("0014"):
             print(f"  Script Type: P2WPKH (Witness v0 key hash)")
             print(f"  Key Hash: {script_hex[4:]}")
+            address = p2wpkh_to_address(script_hex)
+            if address:
+                print(f"  Address: {address}")
         elif script_hex.startswith("a9") and script_hex.endswith("87"):
             print(f"  Script Type: P2SH (Pay to Script Hash)")
+            address = p2sh_to_address(script_hex)
+            if address:
+                print(f"  Address: {address}")
         elif script_hex.startswith("6a"):
             print(f"  Script Type: OP_RETURN (Null Data)")
-            print(f"  Data: {script_hex[2:]}")
+            data_hex = script_hex[2:]
+            print(f"  Data: {data_hex}")
+                           
+                
+        elif script_hex.startswith("76a914") and script_hex.endswith("88ac"):
+            print(f"  Script Type: P2PKH (Pay to Public Key Hash)")
+            address = p2pkh_to_address(script_hex)
+            if address:
+                print(f"  Address: {address}")
         else:
-            print(f"  Script Type: Unknown or P2PK/P2PKH")
+            print(f"  Script Type: Unknown or P2PK")
 
     # Extract locktime (4 bytes at the end)
     locktime_hex = coinbase_part2[-8:]
     locktime = int(locktime_hex, 16)
     print(f"\nLocktime: {locktime}")
 
+    # Full transaction
+    full_tx = coinbase_part1 + coinbase_part2
+    print(f"\nFull Transaction Hex: {full_tx}")
+    print(f"Transaction ID: {hashlib.sha256(hashlib.sha256(bytes.fromhex(full_tx)).digest()).digest()[::-1].hex()}")
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <input_file>")
         sys.exit(1)
+    
+    # Note: This script requires the 'base58' and 'bech32' packages
+    # You can install them using pip:
+    # pip install base58 bech32
     
     decode_coinbase(sys.argv[1])
