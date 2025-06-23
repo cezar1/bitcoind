@@ -52,7 +52,8 @@ RUN wget ${BERKELEYDB_URL} && \
 WORKDIR /build
 
 # Fetch the source code (using a specific tag for reproducibility)
-RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
+#RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
+RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
 
 # Move into the source directory
 WORKDIR /build/bitcoin
