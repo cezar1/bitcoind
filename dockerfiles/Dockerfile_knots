@@ -3,24 +3,13 @@ FROM ubuntu:22.04
 
 # Install necessary build tools and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    autoconf \
-    automake \
-    libtool \
-    libssl-dev \
-    libsqlite3-dev \
-    libboost-all-dev \
-    libevent-dev \
-    libzmq3-dev \
-    libdb5.3++-dev \
-    libminiupnpc-dev \
-    python3 \
-    python3-pip \
+    build-essential cmake pkgconf python3 \
     git \
-    pkg-config \
-    bsdextrautils  \
+    libevent-dev libboost-dev \
+    libsqlite3-dev \
     net-tools \
     wget \
+    ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the build environment
@@ -53,26 +42,19 @@ WORKDIR /build
 
 # Fetch the source code (using a specific tag for reproducibility)
 #RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-
+# RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
+RUN git clone -b v29.1.knots20250903 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
 # Move into the source directory
 WORKDIR /build/bitcoin
 
-# Run autogen.sh with additional tools
-RUN ./autogen.sh
-
-# Configure the build without GUI
-RUN ./configure --prefix=/opt/bitcoin --with-gui=no --enable-static --disable-shared --enable-wallet --with-sqlite
-
-# Build bitcoind
-RUN make -j$(nproc)
-
-# Install bitcoind to a known location for reproducibility
-RUN make install
-
-# Clean up the build environment for a smaller image
-RUN make clean && \
-    rm -rf /build
+# Configure and build with CMake
+RUN mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_GUI=OFF \
+    -DCMAKE_INSTALL_PREFIX=/opt/bitcoin \
+    .. && \
+    cmake --build . -j$(nproc) && \
+    cmake --install .
 
 # Set up the final environment
 ENV PATH="/opt/bitcoin/bin:$PATH"
