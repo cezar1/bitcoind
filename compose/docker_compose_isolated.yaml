@@ -6,7 +6,7 @@ services:
     image: isolated-bitcoin-node-knots
     container_name: bitcoin-node-knots
     volumes:
-      - ${PWD}/configs/bitcoin_isolated_node.conf:/root/.bitcoin/bitcoin.conf:ro
+      - ${PWD}/configs/overridden_bitcoin_isolated_node.conf:/root/.bitcoin/bitcoin.conf:ro
       - ${PWD}/bitcoin_rpc_auth.conf:/root/.bitcoin/bitcoin_rpc_auth.conf:ro
       - /mnt/data/btc:/data
     ports:
