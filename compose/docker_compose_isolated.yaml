@@ -15,4 +15,4 @@ services:
     command: bitcoind -datadir=/data -conf=/root/.bitcoin/bitcoin.conf -checkblocks=1 -dbcache=4096 -persistmempool=0
     stop_grace_period: 120s
     stop_signal: SIGTERM
-    restart: "no"
+    restart: unless-stopped
