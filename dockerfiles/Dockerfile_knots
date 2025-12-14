@@ -20,10 +20,10 @@ WORKDIR /build
 #RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
 # RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
 # RUN git clone -b v29.1.knots20250903 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin && \
-RUN git clone -b 29.2.knots20251110+UASF-ReducedData --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
+RUN git clone -b 29.2.knots20251110+UASF-BIP110 --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
     cd bitcoin && \
     ACTUAL_HASH=$(git rev-parse HEAD) && \
-    EXPECTED_HASH="d699af3c88acd046de2dd7e0f1da6402a88bc4b4" && \
+    EXPECTED_HASH="2f32c966044ac07d614972f7875551093bbd9254" && \
     if [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then \
         echo "Error: Git commit hash mismatch" && \
         echo "Expected: $EXPECTED_HASH" && \
