@@ -16,16 +16,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set up the build environment
 WORKDIR /build
 
-# Fetch the source code (using a specific tag for reproducibility)
-#RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-# RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-# RUN git clone -b v29.1.knots20250903 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin && \
-# 2f32c966044ac07d614972f7875551093bbd9254
-# RUN git clone -b 29.2.knots20251110+UASF-BIP110 --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
-RUN git clone -b v29.2.knots20251110+bip110-v0.1rc2 --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
+RUN git clone -b v29.2.knots20251110+bip110-v0.1rc3 --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
     cd bitcoin && \
     ACTUAL_HASH=$(git rev-parse HEAD) && \
-    EXPECTED_HASH="b4209e32108ebf2d556d72c77138722bf51fa3a5" && \
+    EXPECTED_HASH="37ea81d50eb7d7e235c3ffbd29ac5c3827d17d27" && \
     if [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then \
         echo "Error: Git commit hash mismatch" && \
         echo "Expected: $EXPECTED_HASH" && \
