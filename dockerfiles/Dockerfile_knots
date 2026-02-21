@@ -10,18 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     net-tools \
     wget \
     ca-certificates \
+    jq \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the build environment
 WORKDIR /build
 
-# Fetch the source code (using a specific tag for reproducibility)
-#RUN git clone -b v27.1.knots20240801 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-# RUN git clone -b v28.1.knots20250305 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin
-RUN git clone -b v29.1.knots20250903 --depth 1 --single-branch --no-tags https://github.com/bitcoinknots/bitcoin.git bitcoin && \
+RUN git clone -b v29.2.knots20251110+bip110-v0.1rc3 --depth 1 --single-branch --no-tags https://github.com/dathonohm/bitcoin bitcoin && \
     cd bitcoin && \
     ACTUAL_HASH=$(git rev-parse HEAD) && \
-    EXPECTED_HASH="271fd206893a164b2d1c2d1c44c3696d23dd10e9" && \
+    EXPECTED_HASH="37ea81d50eb7d7e235c3ffbd29ac5c3827d17d27" && \
     if [ "$ACTUAL_HASH" != "$EXPECTED_HASH" ]; then \
         echo "Error: Git commit hash mismatch" && \
         echo "Expected: $EXPECTED_HASH" && \
